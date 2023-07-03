@@ -5,19 +5,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 
-import kr.co.jhta.mapper.ProductMapper;
+import kr.co.jhta.service.HrService;
 import kr.co.jhta.vo.Product;
 
-@SpringBootApplication
-public class SpringBootMybatisApplication {
-
+public class App1 {
+	
 	public static void main(String[] args) {
 		ApplicationContext context = SpringApplication.run(SpringBootMybatisApplication.class, args);
 		
-		ProductMapper mapper = context.getBean(ProductMapper.class);
+		HrService hrService = context.getBean(HrService.class);
 		
 		// 신규 상품정보 추가
 //		Product product = new Product();
@@ -29,10 +27,10 @@ public class SpringBootMybatisApplication {
 //		product.setOnSell("Y");
 //		product.setStock(5);
 //		product.setCatNo(103);
-//		mapper.insertProduct(product);
+//		hrService.insertProduct(product);
 		
 		// 모든 상품 정보 조회
-//		List<Product> products = mapper.getAllProducts();
+//		List<Product> products = hrService.getAllProducts();
 //		for (Product product : products) {
 //			System.out.println("상품번호 : " + product.getNo());
 //			System.out.println("상품이름 : " + product.getName());
@@ -48,7 +46,7 @@ public class SpringBootMybatisApplication {
 //		}
 		
 		// 상품번호에 해당하는 상품정보 하나 조회
-//		Product product = mapper.getProductByProductNo(1112);
+//		Product product = hrService.getProductByProductNo(1112);
 //		System.out.println("상품번호 : " + product.getNo());
 //		System.out.println("상품이름 : " + product.getName());
 //		System.out.println("상품제조사 : " + product.getMaker());
@@ -62,14 +60,14 @@ public class SpringBootMybatisApplication {
 //		System.out.println("---------------------------------------------------------");
 //		
 		// 상품번호에 해당하는 상품정보 삭제
-//		mapper.deleteProductByProductNo(1110);
+//		hrService.deleteProductByProductNo(1110);
 		
 		// 변경된 상품정보를 전달받아서 상품정보 변경
-//		Product product = mapper.getProductByProductNo(1111);
+//		Product product = hrService.getProductByProductNo(1111);
 //		product.setOnSell("N");
 //		product.setName("단종된 상품");
 //		
-//		mapper.updateProduct(product);
+//		hrService.updateProduct(product);
 		
 		// 상품이름, 제조회사, 최소가격/최대가격, 카테고리 번호를 전달받아서 상품정보를 검색
 		Map<String, Object> param = new HashMap<String, Object>();
@@ -77,7 +75,7 @@ public class SpringBootMybatisApplication {
 		param.put("name", "MSI 게이밍 노트북");
 		param.put("min", 1400000);
 		param.put("max", 1800000);
-		List<Product> products =  mapper.searchProducts(param);
+		List<Product> products = hrService.searchProducts(param);
 		for (Product product : products) {
 			System.out.println("상품번호 : " + product.getNo());
 			System.out.println("상품이름 : " + product.getName());
