@@ -10,9 +10,9 @@
 		</selectKey>
 		insert into web_products
 		(product_no, product_name, product_maker, product_description, product_price, product_discount_price,
-		 product_on_sell, product_stock, cat_no)
+		 product_stock, cat_no)
 		 values
-		(#{no}, #{name}, #{maker}, #{description}, #{price}, #{discountPrice}, #{onSell}, #{stock}, #{catNo})
+		(#{no}, #{name}, #{maker}, #{description}, #{price}, #{discountPrice}, #{stock}, #{catNo})
 	</update>
 	
 	<resultMap type="Product" id="ProductResultMap">
@@ -24,14 +24,139 @@
 		<result column="product_discount_price" property="discountPrice"/>
 		<result column="product_on_sell" property="onSell"/>
 		<result column="product_stock" property="stock"/>
+		<result column="product_update_date" property="updateDate"/>
+		<result column="product_create_date" property="createDate"/>
 		<result column="cat_no" property="catNo"/>
 		<result column="cat_name" property="catName"/>
 	</resultMap>
 	
 	<select id="getAllProducts" resultMap="ProductResultMap">
-		select *
+		select product_no, product_name, product_maker, product_price, product_discount_price, product_on_sell
 		from web_products
 	</select>
+	
+<!-- 	
+	페이지 번호에 맞는 상품을 조회하기
+		- 페이지 번호에 해당하는 시작행, 끝행 번호를 전달받아서 상품 정보를 조회한다.
+		
+	List<Product> getProducts(@Param("begin")int begin, @Param("end")int end);
+		
+	<select id="getProducts" resultMap="ProductResultMap">
+		select 
+			product_no,
+			product_name,
+			product_maker, 
+			product_price, 
+			product_discount_price, 
+			product_on_sell
+		from (
+			select
+				row_number() over (order by product_no desc) row_number,
+				product_no, 
+				product_name, 
+				product_maker, 
+				product_price, 
+				product_discount_price, 
+				product_on_sell
+			from web_products
+		)
+		where row_number between #{begin} and #{end}
+	</select> 
+	
+	
+	페이지 번호, 정렬순서에 맞는 상품정보 조회하기
+		- 조회시작행, 끝행, 정렬방식을 Map객체로 전달받아서 조회한다.
+		
+	List<Product> getProducts(Map<Stirng, Object> param);
+	
+	<select id="getProducts" resultMap="ProductResultMap">
+		select 
+			product_no,
+			product_name,
+			product_maker, 
+			product_price, 
+			product_discount_price, 
+			product_on_sell
+		from (
+			select
+				<choose>
+					<when test="sort == 'date'">
+						row_number() over (order by product_no desc) row_number,
+					</when>
+					<when test="sort == 'high'">
+						row_number() over (order by product_price desc) row_number,
+					</when>
+					<when test="sort == 'low'">
+						row_number() over (order by product_price asc) row_number,
+					</when>
+					<otherwise>
+						row_number() over (order by product_no desc) row_number,
+					</otherwise>
+				</choose>
+				product_no, 
+				product_name, 
+				product_maker, 
+				product_price, 
+				product_discount_price, 
+				product_on_sell
+			from web_products
+		)
+		where row_number between #{begin} and #{end}
+	</select> 
+	
+	
+	페이지번호, 정렬방식, 검색옵션, 검색키워드에 맞는 상품정보를 조회하기
+		-> 조회시작행, 끝행, 정렬방식, 검색옵션("상품명", "제조사", "가격"), 해당 옵션의 값
+		
+	List<Product> getProducts(Map<Stirng, Object> param);
+	
+	<select id="getProducts" resultMap="ProductResultMap">
+		select 
+			product_no,
+			product_name,
+			product_maker, 
+			product_price, 
+			product_discount_price, 
+			product_on_sell
+		from (
+			select
+				<choose>
+					<when test="sort == 'date'">
+						row_number() over (order by product_no desc) row_number,
+					</when>
+					<when test="sort == 'high'">
+						row_number() over (order by product_price desc) row_number,
+					</when>
+					<when test="sort == 'low'">
+						row_number() over (order by product_price asc) row_number,
+					</when>
+					<otherwise>
+						row_number() over (order by product_no desc) row_number,
+					</otherwise>
+				</choose>
+				product_no, 
+				product_name, 
+				product_maker, 
+				product_price, 
+				product_discount_price, 
+				product_on_sell
+			from web_products
+		)
+		<where>
+			<choose>
+				<when test="opt == '상품명'">
+					product_name like '%' || #{keyword} || '%'
+				</when>
+				<when test="opt == '제조사'">
+					product_maker = #{keyword}
+				</when>
+				<when test="opt == '가격'">
+					product_price &lt= #{keyword} 
+				</when>
+			</choose>
+		</where>
+	</select> 
+-->
 	
 	<select id="getProductByProductNo" parameterType="int" resultMap="ProductResultMap">
 		select *
@@ -48,46 +173,42 @@
 	<update id="updateProduct" parameterType="Product">
 		update web_products
 		<set>
-			<if test="name != null">
-				product_name = #{name},
-			</if>
-			<if test="maker != null">
-				product_maker = #{maker},
-			</if>
-			<if test="description != null">
-				product_description = #{description},
-			</if>
-			<if test="price != null">
-				product_price = #{price},
-			</if>
-			<if test="discountPrice != null">
-				product_discount_price = #{discountPrice},
-			</if>
-			<if test="onSell != null">
-				product_on_sell = #{onSell},
-			</if>
-			<if test="stock != null">
-				product_stock = #{stock},
-			</if>
-			<if test="catNo != null">
-				cat_no = #{catNo},
-			</if>
+		<!-- 파라미터 타입이 map이라면 
+			 <if test="name != null>
+			 product_name = #{name},
+			 </if>
+			 라고 적는다. -->
+			product_name = #{name},
+			product_maker = #{maker},
+			product_description = #{description},
+			product_price = #{price},
+			product_discount_price = #{discountPrice},
+			product_on_sell = #{onSell},
+			product_stock = #{stock},
+			cat_no = #{catNo},
+			product_update_date = sysdate
 		</set>
 		where product_no = #{no}
 	</update>
 	
 	<select id="searchProducts" parameterType="map" resultMap="ProductResultMap">
-		select *
+		select product_no, product_name, product_maker, product_price, product_discount_price, product_on_sell
 		from web_products
 		<where>
-			<if test="name != null">
-				product_name = #{name}
+			<if test="name != null"> <!-- 여기서 name은 Product객체의 필드 -->
+			<!-- 이름에 들어가기만 하면 됨 
+				 완전 같아야 한다면 product_name = #{name} 이렇게 작성한다. 
+				 #{키}를 적으면 value가 자동 삽입된다. -->
+				product_name like '%' || #{name} || '%'
 			</if>
 			<if test="maker != null">
 				and product_maker = #{maker}
 			</if>
-			<if test="min != null and max != null">
-				and product_price between #{min} and #{max}
+			<if test="min != null ">
+				and product_price >= #{min}
+			</if>
+			<if test="max != null">
+				and product_price &lt;= #{max}
 			</if>
 			<if test="catNo != null">
 				and cat_no = #{catNo}

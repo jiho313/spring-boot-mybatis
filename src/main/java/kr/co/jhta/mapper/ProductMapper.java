@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import kr.co.jhta.vo.Product;
 
@@ -29,4 +30,9 @@ public interface ProductMapper {
 	// (검색 조건은 위에 나열된 것 중에서 하나도 사용되지 않을 수도, 전부 사용될 수도 있다.)
 	List<Product> searchProducts(Map<String, Object> param);
 	
+	// 페이지 네이션 1 - 정렬옵션이 없다면, 
+	// List<Product> getProducts(@Param("begin")int begin, @Param("end")int end);
+	
+	// 페이지 네이션 2 - 정렬옵션이 있다면,
+	// List<Product> getProducts(Map<String, Object> param); -"sort", "date" or "high" or "low"
 }
